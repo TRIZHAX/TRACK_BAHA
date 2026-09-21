@@ -1,0 +1,3 @@
+import { describe,expect,it } from "vitest";
+import { evaluatePassability } from "@/lib/passability";
+describe("passability evaluation",()=>{it("never labels unknown depth as safe",()=>expect(evaluatePassability("unknown","ankle","calf",0)).toBe("unknown"));it("marks stale observations unknown",()=>expect(evaluatePassability("none","ankle","calf",7)).toBe("unknown"));it("applies configured thresholds",()=>{expect(evaluatePassability("none","ankle","calf",1)).toBe("passable");expect(evaluatePassability("ankle","ankle","calf",1)).toBe("caution");expect(evaluatePassability("knee","ankle","calf",1)).toBe("hazardous")})});

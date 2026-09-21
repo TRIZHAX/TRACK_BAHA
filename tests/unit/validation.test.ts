@@ -1,0 +1,3 @@
+import { describe,expect,it } from "vitest";
+import { floodReportSchema,sosSchema } from "@/lib/validation";
+describe("server schemas",()=>{it("rejects invalid coordinates",()=>expect(floodReportSchema.safeParse({latitude:91,longitude:0,location_name:"Road",depth:"ankle",observed_at:new Date().toISOString()}).success).toBe(false));it("accepts a valid observation",()=>expect(floodReportSchema.safeParse({latitude:14.6,longitude:121,location_name:"Main Road",depth:"calf",description:"",observed_at:new Date().toISOString()}).success).toBe(true));it("requires a coordinate pair",()=>expect(sosSchema.safeParse({latitude:14,longitude:null,emergency_type:"stranded",immediate_needs:[],description:""}).success).toBe(false))});

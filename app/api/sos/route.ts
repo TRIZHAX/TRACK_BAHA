@@ -1,0 +1,8 @@
+import { NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/lib/auth";
+import { sosSchema } from "@/lib/validation";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+export async function GET(){try{const {supabase,user}=await requireUser();const {data,error}=await supabase.from("sos_alerts").select("id,emergency_type,immediate_needs,description,status,latitude,longitude,created_at,updated_at,assigned_responder_id").eq("user_id",user.id).order("created_at",{ascending:false}).limit(25);if(error)throw error;return NextResponse.json({data});}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Unable to load alerts"},{status:e instanceof Error&&e.message==="UNAUTHORIZED"?401:500});}}
+
+export async function POST(request:NextRequest){try{const {supabase,user}=await requireUser();if(!checkRateLimit(`sos:${user.id}`,3,5*60_000))return NextResponse.json({error:"SOS submission limit reached. Call local emergency services if danger is immediate."},{status:429});const body=await request.json();const parsed=sosSchema.safeParse(body);if(!parsed.success)return NextResponse.json({error:parsed.error.issues[0]?.message},{status:400});const {data,error}=await supabase.from("sos_alerts").insert({...parsed.data,user_id:user.id,description:parsed.data.description||null}).select("id,status,created_at").single();if(error)throw error;return NextResponse.json({data,delivery:"stored"},{status:201});}catch(e){const code=e instanceof Error&&e.message==="UNAUTHORIZED"?401:500;return NextResponse.json({error:e instanceof Error?e.message:"Alert was not submitted"},{status:code});}}

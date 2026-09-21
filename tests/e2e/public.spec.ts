@@ -1,0 +1,4 @@
+import { test,expect } from "@playwright/test";
+test("landing page exposes primary safety actions",async({page})=>{await page.goto("/");await expect(page.getByRole("heading",{name:/Know the water/i})).toBeVisible();await expect(page.getByRole("link",{name:/View live map/i}).first()).toBeVisible();await expect(page.getByRole("link",{name:/Emergency/i}).first()).toBeVisible();});
+test("map presents controls and uncertainty notice",async({page})=>{await page.goto("/map");await expect(page.getByRole("heading",{name:"Live flood map"})).toBeVisible();await expect(page.getByLabel("Vehicle type")).toBeVisible();await expect(page.getByText(/not guarantees of safe passage/i)).toBeVisible();});
+test("protected report flow redirects guests",async({page})=>{await page.goto("/report");await expect(page).toHaveURL(/\/login/);});

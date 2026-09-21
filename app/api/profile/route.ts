@@ -1,0 +1,5 @@
+import { NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/lib/auth";
+import { profileSchema } from "@/lib/validation";
+export async function GET(){try{const {supabase,user}=await requireUser();const {data,error}=await supabase.from("profiles").select("full_name,phone,role,created_at").eq("id",user.id).single();if(error)throw error;return NextResponse.json({data:{...data,email:user.email}});}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Unable to load profile"},{status:500});}}
+export async function PATCH(r:NextRequest){try{const {supabase,user}=await requireUser();const p=profileSchema.safeParse(await r.json());if(!p.success)return NextResponse.json({error:p.error.issues[0]?.message},{status:400});const {data,error}=await supabase.from("profiles").update(p.data).eq("id",user.id).select("full_name,phone,role").single();if(error)throw error;return NextResponse.json({data});}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Update failed"},{status:500});}}

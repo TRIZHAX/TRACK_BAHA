@@ -1,0 +1,3 @@
+import { NextResponse } from "next/server";
+import { requireRole } from "@/lib/auth";
+export async function GET(){try{const {supabase}=await requireRole(["responder","admin"]);const {data,error}=await supabase.from("sos_alerts").select("id,user_id,latitude,longitude,emergency_type,immediate_needs,description,status,created_at,updated_at,assigned_responder_id").not("status","in",'("resolved","cancelled")').order("created_at",{ascending:true}).limit(100);if(error)throw error;return NextResponse.json({data});}catch(e){const m=e instanceof Error?e.message:"Unable to load alerts";return NextResponse.json({error:m},{status:m==="FORBIDDEN"?403:500});}}

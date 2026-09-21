@@ -1,0 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
+import { describe,expect,it } from "vitest";
+const configured=Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.SUPABASE_SERVICE_ROLE_KEY);
+describe.skipIf(!configured)("Supabase integration",()=>{const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false}});it("has all required tables",async()=>{for(const table of ["profiles","flood_reports","vehicle_types","passability_rules","report_verifications","sos_alerts","sos_status_history","notifications","audit_logs"]){const {error}=await db.from(table).select("*",{head:true,count:"exact"});expect(error,table).toBeNull();}});it("has seeded vehicle rules",async()=>{const {count,error}=await db.from("passability_rules").select("*",{head:true,count:"exact"});expect(error).toBeNull();expect(count).toBeGreaterThanOrEqual(8);});});
