@@ -85,28 +85,27 @@ export async function GET() {
 
       profile: profile.data ?? null,
     });
-  } catch (error) {
-    console.error("Dashboard API error:", error);
+  } catch (error: unknown) {
+    console.error("Dashboard API ERROR:", error);
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Unable to load dashboard";
+    let details: unknown;
 
-    let status = 500;
-
-    if (
-      message === "UNAUTHORIZED" ||
-      message.startsWith("AUTH_ERROR:")
-    ) {
-      status = 401;
-    } else if (message === "FORBIDDEN") {
-      status = 403;
+    if (error instanceof Error) {
+      details = {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      };
+    } else {
+      details = error;
     }
 
     return NextResponse.json(
-      { error: message },
-      { status }
+      {
+        error: "Dashboard API failed",
+        details,
+      },
+      { status: 500 }
     );
   }
 }
