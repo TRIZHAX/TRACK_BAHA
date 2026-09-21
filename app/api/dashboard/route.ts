@@ -47,7 +47,10 @@ export async function GET() {
         const result = await query;
 
         if (result.error) {
-          console.error(`Dashboard query failed: ${name}`, result.error);
+          console.error(
+            `Dashboard query failed: ${name}`,
+            result.error
+          );
 
           throw new Error(
             `${name}: ${result.error.message} ` +
@@ -69,24 +72,41 @@ export async function GET() {
     return NextResponse.json({
       reports: reports.data ?? [],
       reportCount: reports.count ?? 0,
+
       alerts: alerts.data ?? [],
       alertCount: alerts.count ?? 0,
+
       notifications: notifications.data ?? [],
+
       unread:
-        notifications.data?.filter((item) => !item.read_at).length ?? 0,
+        notifications.data?.filter(
+          (item) => !item.read_at
+        ).length ?? 0,
+
       profile: profile.data ?? null,
     });
   } catch (error) {
     console.error("Dashboard API error:", error);
 
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unable to load dashboard";
+
+    let status = 500;
+
+    if (
+      message === "UNAUTHORIZED" ||
+      message.startsWith("AUTH_ERROR:")
+    ) {
+      status = 401;
+    } else if (message === "FORBIDDEN") {
+      status = 403;
+    }
+
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to load dashboard",
-      },
-      { status: 500 }
+      { error: message },
+      { status }
     );
   }
 }
